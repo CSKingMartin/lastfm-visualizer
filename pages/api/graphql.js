@@ -8,7 +8,8 @@ const cors = Cors();
 
 export const config = {
 	api: {
-		bodyParser: false
+		bodyParser: false,
+		responseLimit: false
 	}
 };
 
@@ -22,4 +23,4 @@ export default cors(async (req, res) => {
 	
 	await startServer;
 	await apolloServer.createHandler({ path: '/api/graphql' })(req, res);
-})
+});

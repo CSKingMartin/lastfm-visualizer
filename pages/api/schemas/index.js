@@ -1,11 +1,17 @@
-import { gql } from 'apollo-server-micro';
+import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
 	type Scrobble {
 		name: String
+		artist: Artist
 	}
 	
+	type Artist {
+		name: String
+	}
+
 	type Query {
-		getScrobbles: [Scrobble]
+		allScrobbles: [Scrobble!]!
+		scrobbleCount: Int
 	}
 `;
