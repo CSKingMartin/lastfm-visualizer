@@ -68,23 +68,69 @@ export const resolvers = {
 						
 						const recompiled = Object.fromEntries(filteredData);
 						const output = [];
+						const artists = [];
+						const albums = [];
 
 						Object.keys(recompiled).forEach(key => {
 							const entry = recompiled[key];
+							const artist = entry.artist['#text'];
+							const artistIndex = artists.findIndex((element) => element.name === artist);
+							
+							const album = entry.album['#text'];
+							const albumIndex = albums.findIndex((element) => element.name === album);
+							
+							if (artistIndex !== -1) {
+								artists[artistIndex].playcount++;
+							} else {
+								artists.unshift({name: artist, playcount: 1});
+							}
+							
+							if (albumIndex !== -1) {
+								albums[albumIndex].playcount++;
+							} else {
+								albums.unshift({name: album, playcount: 1});
+							}
 
 							const newEntry = {
-								name: entry.name,
-								artist: entry.artist['#text'],
+								artist: {
+									name: entry.artist['#text'],
+								},
 								date: {
 									uts: entry.date.uts,
 									text: entry.date['#text']
+								},
+								song: {
+									name: entry.name,
 								}
 							}
 							
 							output.unshift(newEntry);
 						});
+						
+						artists.sort((a, b) => {
+							if (a.playcount < b.playcount) {
+								return 1;
+							} else {
+								return -1;
+							}
+						});
+						
+						albums.sort((a, b) => {
+							if (a.playcount < b.playcount) {
+								return 1;
+							} else {
+								return -1;
+							}
+						});
+						
+						console.log(albums);
 
-						return output;
+						return {
+							artists: artists,
+							albums: albums,
+							count: output.length,
+							scrobbles: output
+						};
 					});
 			} catch (error) {
 				throw error;

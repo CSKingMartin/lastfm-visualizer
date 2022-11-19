@@ -2,8 +2,9 @@ import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
 	type Scrobble {
-		name: String
-		artist: String
+		song: Song
+		artist: Artist
+		album: Album
 		date: Date
 	}
 	
@@ -12,14 +13,32 @@ export const typeDefs = gql`
 		text: String
 	}
 	
-	type Mutation {
-		removeBadEntries: [Scrobble]
+	type Album {
+		name: String!
+		playcount: Int
+	}
+	
+	type Artist {
+		name: String!
+		playcount: Int
+	}
+	
+	type Song {
+		name: String!
+		playcount: Int
+	}
+	
+	type MonthStatistics {
+		artists: [Artist]
+		albums: [Album]
+		count: Int
+		scrobbles: [Scrobble]
 	}
 
 	type Query {
 		allScrobbles: [Scrobble!]!
 		scrobbleCount: Int
 		findScrobblesWithNoDate: [Scrobble]
-		scrobblesForMonth(month: String, year: String): [Scrobble]!
+		scrobblesForMonth(month: String, year: String): MonthStatistics
 	}
 `;
