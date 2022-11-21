@@ -16,6 +16,7 @@ export const typeDefs = gql`
 	type Album {
 		name: String!
 		playcount: Int
+		artist: Artist
 	}
 	
 	type Artist {
@@ -28,17 +29,30 @@ export const typeDefs = gql`
 		playcount: Int
 	}
 	
-	type MonthStatistics {
+	type Month {
+		month: String
+		year: String
 		artists: [Artist]
 		albums: [Album]
 		count: Int
 		scrobbles: [Scrobble]
+		topAlbums: [Album]
+		topArtists: [Artist]
+		topSongs: [Song]
+	}
+	
+	type Year {
+		text: String!
+		months: [Month]
 	}
 
 	type Query {
 		allScrobbles: [Scrobble!]!
 		scrobbleCount: Int
+		countScrobblesInMonth(month: String, year: String): Int
 		findScrobblesWithNoDate: [Scrobble]
-		scrobblesForMonth(month: String, year: String): MonthStatistics
+		getScrobblesForMonth(month: String, year: String): Month
+		getScrobblesForYear(month: String, year: String): Year
+		getScrobbleTimeline: [Year]
 	}
 `;
