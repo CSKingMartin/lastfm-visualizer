@@ -88,7 +88,7 @@ export const LastFMTimeline = (props) => {
 
 							return (
 								<div key={index}>
-									{key} Scrobbles number {entry.count} out of {data.maxMonthly}
+									<MonthBar month={key} year="2016" maxScrobbles={data.maxMonthly} injectedData={entry} />
 								</div>	
 							);
 						})
