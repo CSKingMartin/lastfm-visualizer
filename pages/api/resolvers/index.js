@@ -2,10 +2,7 @@ import axios from 'axios';
 import path from 'path';
 import getConfig from 'next/config'
 import { promises as fs } from 'fs';
-import { default as getScrobblesForMonth } from './get-month-scrobbles';
-import { default as getScrobblesForYear } from './get-year-scrobbles';
-import { getMonthDateRange } from '../helpers';
-import { parseMonthData } from './get-month-scrobbles';
+import { filterUnwantedData, getMonthDateRange, parseRangeData } from '../helpers';
 
 export const handleAPICall = async () => {
 	try {
@@ -54,55 +51,66 @@ export const resolvers = {
 				throw error;
 			}
 		},
-		getScrobblesForMonth: async (parent, args) => await getScrobblesForMonth(parent, args),
-		getScrobblesForYear: async (parent, args) => await getScrobblesForYear(parent, args),
-		countScrobblesInMonth: async (parent, args) => {
-			/*
-				1. Set the 'max scrobbles' only for the range provided
-				2. we will add to the range as we pull more data
-				3. adjust the graph based on an animation / recalculation of heights for the MonthBars
-			*/
+		getScrobblesForRange: async (parent, args) => {
 			try {
+				const {
+					start,
+					duration,
+					end
+				} = args;
+
 				const scrobbles = await handleAPICall()
 					.then((data) => {
 						let bounds;
+						let parsedData;
 
-						if (args.month && args.year) {
-							bounds = getMonthDateRange(args.month, args.year);
+						if (start && end) {	
+							parsedData = parseRangeData(data, { start: start, end: end })
+						} else if (start && duration) {
+							const endDate = parseInt(start, 10);
+							let durationInUTS;
+							
+							switch (duration) {
+								case 'Year':
+								case 'year':
+									durationInUTS = 31556926;
+									parsedData = parseRangeData(data, { start: start, end: parseInt(start, 10) + durationInUTS });
+									break;
+								case 'Month':
+								case 'month':
+									const dateConversion = new Date(start * 1000);
+									const month = dateConversion.getMonth().toString().charAt(2) ? dateConversion.getMonth().toString() : `0${dateConversion.getMonth().toString()}`
+
+									const range = getMonthDateRange(month, dateConversion.getFullYear());
+									
+									parsedData = parseRangeData(data, range);
+									console.log(parsedData);
+									break;
+								case 'Week':
+								case 'week':
+									durationInUTS = 604800;
+									parsedData = parseRangeData(data, { start: start, end: parseInt(start, 10) + durationInUTS });
+									
+									break;
+								default:
+									parsedData = parseRangeData(data, { start: start, end: '1669068087' })
+									break;
+							}
 						} else {
 							bounds = getMonthDateRange('06', '2016'); // default year / month
+							parsedData = parseRangeData(data, bounds);
 						}
-
-						const dataSlice = parseMonthData(data, bounds);
-						return dataSlice.length;
-					})
+						
+						return {
+							count: parsedData.length,
+							scrobbles: filterUnwantedData(Object.values(parsedData)).scrobbles
+						};
+					});
+				
 				return scrobbles;
 			} catch (error) {
 				throw error;
 			}
 		}
 	},
-	// Mutation: {
-	// 	removeBadEntries: async () => {
-	// 		try {
-	// 			const scrobbleData = await handleAPICall()
-	// 				.then((data) => {
-	// 					let count = 0;
-	// 					return data.map(entry => {
-	// 						if (entry.date) {
-	// 							return {
-	// 								name: entry.name,
-	// 								artist: {
-	// 									name: entry.artist['#text']
-	// 								}
-	// 							};
-	// 						}
-	// 				})})
-	// 				
-	// 			return scrobbleData.filter(entry => entry);
-	// 		  } catch (error) {
-	// 			throw error;
-	// 		  }
-	// 	},
-	// }
 };

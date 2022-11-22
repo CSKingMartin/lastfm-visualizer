@@ -1,45 +1,76 @@
 import MonthBar from './partials/month-bar';
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
 import { useEffect, useState } from 'react';
+import getMonthFromDate from '../../assets/js/helpers';
 
 const client = new ApolloClient({
 	 uri: '/api/graphql/',
 	 cache: new InMemoryCache()
 });
 
-const query = gql`
-	query {
-	  getScrobblesForYear(month: "03", year:"2017") {
-		months {
-		  count
-		  month
-		  year
-		}
-	  }
+// TODO: place 1464764400 (June 01, 2016) as a default start date in the env file
+const craftQuery = (start) => {
+	let startDate = start;
+	let queryString = `
+		query {
+	`;
+
+	for (let i = 0; i < 12; i++) {
+		const queryName = new Date(startDate * 1000).toLocaleString('en-US', {
+			month: 'long',
+		});
+	
+		queryString += `
+			${queryName}: getScrobblesForRange(start: "${startDate}", end: "${getMonthFromDate(startDate)}") {
+				count
+				scrobbles {
+					song {
+						name
+					}
+				}
+			}
+		`;
+	
+		startDate = getMonthFromDate(startDate);
 	}
-`;
+	queryString += '}';
+
+	return gql`${queryString}`;
+};
 
 async function getStaticProps(args) {
 	const { data } = await client.query({
-		query: query
+		query: craftQuery(args.start)
+	});
+	
+	let max = 0;
+	Object.keys(data).map(key => {
+		const { count } = data[key];
+		if (count > max) {
+			max = count;
+		}
 	});
 
-	return data.getScrobblesForYear;
+	return {
+		maxMonthly: max,
+		months: data
+	};
 }
 
 export const LastFMTimeline = (props) => {
 	const {
+		start,
 		className,
 		children,
 		...rest
 	} = props;
 	
 	const [loading, setLoading] = useState(true);
-	const [data, setData] = useState([]);
+	const [data, setData] = useState({});
 	
 	useEffect(() => {
 		if (loading) {
-			getStaticProps().then(data => {
+			getStaticProps({ start: start ? start : '1464764400' }).then(data => {
 				setData(data);
 				setLoading(false);
 			});
@@ -51,12 +82,15 @@ export const LastFMTimeline = (props) => {
 			<div className="lastfm-timeline__graph">
 				<div className="lastfm-timeline__graph-data">
 					{loading && <p>Loading...</p>}
-					{(!loading && data) &&
-						data.months.map(element => {
-							// console.log('from year', element);
+					{(!loading && data.months) &&
+						Object.keys(data.months).map((key, index) => {
+							const entry = data.months[key];
+
 							return (
-								<MonthBar month={element.month} year={element.year} injectedData={element} />
-							)
+								<div key={index}>
+									{key} Scrobbles number {entry.count} out of {data.maxMonthly}
+								</div>	
+							);
 						})
 					}
 				</div>

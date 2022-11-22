@@ -8,6 +8,11 @@ export const typeDefs = gql`
 		date: Date
 	}
 	
+	type Scrobbles {
+		scrobbles: [Scrobble]
+		count: Int
+	}
+	
 	type Date {
 		uts: String
 		text: String
@@ -49,10 +54,6 @@ export const typeDefs = gql`
 	type Query {
 		allScrobbles: [Scrobble!]!
 		scrobbleCount: Int
-		countScrobblesInMonth(month: String, year: String): Int
-		findScrobblesWithNoDate: [Scrobble]
-		getScrobblesForMonth(month: String, year: String): Month
-		getScrobblesForYear(month: String, year: String): Year
-		getScrobbleTimeline: [Year]
+		getScrobblesForRange(start: String, duration: String, end: String): Scrobbles
 	}
 `;
