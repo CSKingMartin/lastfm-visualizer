@@ -1,0 +1,13 @@
+.has-rhythm {
+	& > *:not(.global-header) + *:not(.global-footer) {
+    	margin-top: 1rem;
+	}
+
+	&--large > *:not(.global-header) + *:not(.global-footer) {
+    	margin-top: 2rem;
+	}
+
+	&--page > *:not(.global-header) + *:not(.global-footer) {
+    	margin-top: 6rem;
+	}
+}
