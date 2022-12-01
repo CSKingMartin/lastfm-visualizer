@@ -1,6 +1,6 @@
 import MonthBar from './partials/month-bar';
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import getMonthFromDate from '../../assets/js/helpers';
 
 const client = new ApolloClient({
@@ -57,6 +57,38 @@ async function getStaticProps(args) {
 	};
 }
 
+const DefaultMonthSet = (props) => {
+	const {
+		loadedData,
+		max,
+		...rest
+	} = props;
+	
+	let months = [];
+	
+	for (let i = 0; i < 12; i++) {
+		const abbr = new Intl.DateTimeFormat("en-US", { month: "short" }).format(new Date('1995', `0${i + 5}`));
+		const month = new Intl.DateTimeFormat("en-US", { month: "long" }).format(new Date('1995', `0${i + 5}`));
+		
+		months.push(
+			<MonthBar
+				injectedData={loadedData && loadedData.months[month]}
+				key={i}
+				maxScrobbles={max}
+				month={abbr}
+				variant="dummy"
+				year="2016"
+			/>
+		);
+	};
+
+	return (
+		<React.Fragment>
+			{months}
+		</React.Fragment>	
+	);
+};
+
 export const LastFMTimeline = (props) => {
 	const {
 		start,
@@ -69,7 +101,7 @@ export const LastFMTimeline = (props) => {
 	const [data, setData] = useState({});
 	
 	useEffect(() => {
-		if (loading) {
+		if (loading) { // 1464764400 === June 01, 2016
 			getStaticProps({ start: start ? start : '1464764400' }).then(data => {
 				setData(data);
 				setLoading(false);
@@ -80,20 +112,7 @@ export const LastFMTimeline = (props) => {
 	return (
 		<div className="lastfm-timeline">
 			<div className="lastfm-timeline__graph">
-				<div className="lastfm-timeline__graph-data">
-					{loading && <p>Loading...</p>}
-					{(!loading && data.months) &&
-						Object.keys(data.months).map((key, index) => {
-							const entry = data.months[key];
-
-							return (
-								<div key={index}>
-									<MonthBar month={key} year="2016" maxScrobbles={data.maxMonthly} injectedData={entry} />
-								</div>	
-							);
-						})
-					}
-				</div>
+				<DefaultMonthSet max={data.maxMonthly} loadedData={!loading && data} />
 			</div>
 		</div>
 	)

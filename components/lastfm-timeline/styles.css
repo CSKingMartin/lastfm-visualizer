@@ -1,0 +1,58 @@
+.lastfm-timeline {
+	&__bar-label {
+		height: 1rem;
+		font-size: 0.875rem;
+		line-height: 0.875rem;
+		position: absolute;
+		top: calc(100% + .5rem);
+	}
+
+	&__graph {
+		align-items: flex-end;
+		border: 1px solid gray;
+		display: flex;
+		height: 25rem;
+		margin-bottom: 2rem;
+	}
+	
+	&__loading-bar {
+		height: 100%;
+		width: 100%;
+	}
+	
+	&__graph-bar {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		height: 100%;
+		padding: 1rem;
+		position: relative;
+		max-width: 3rem;
+		
+		&-background {
+			animation: gradient 2s ease infinite;
+			background: linear-gradient(147deg, #bababa, #ffffff);
+			background-size: 400% 400%;
+			display: inline-block;
+			transition: height .2s ease;
+			height: 2rem;
+			width: 1rem;
+			
+			&.is-loaded {
+				background: red;
+			}
+		}
+	}
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 50% 0%;
+	}
+    50% {
+		background-position: 51% 100%;
+	}
+    100% {
+		background-position: 50% 0%;
+	}
+}

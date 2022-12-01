@@ -3,3 +3,5 @@
 @import "palette.css";
 @import "fonts.css";
 @import "utility.css";
+
+@import "../../components/**/*.css";
